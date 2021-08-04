@@ -3,9 +3,10 @@ from datetime import datetime
 from typing import NamedTuple
 
 from x690 import decode
-from x690.types import GeneralizedTime, Type
+from x690.types import GeneralizedTime, MeasFileFooter, Type
 from x690.util import TypeClass, TypeNature, decode_length, visible_octets, wrap
 
+"""
 
 class EsnTimestamp(NamedTuple):
     value: str
@@ -21,11 +22,11 @@ class EsnTimestamp(Type[EsnTimestamp]):
     TAG = 0x82
 
     @staticmethod
-    def decode_raw(data: bytes, slc: slice = slice(None)) -> str:
+    def decode_raw(data: bytes, slc: slice = slice(2)) -> str:
         # return EsnTimestamp(data[slc].decode())
         return GeneralizedTime(data[slc].decode())
 
-    """
+
              types.py:119
                 def decode(
                 data: bytes,
@@ -33,11 +34,24 @@ class EsnTimestamp(Type[EsnTimestamp]):
                 enforce_type: Optional[TypeType[TPopType]] = None,
                 strict: bool = False,
                 ) -> Tuple[TPopType, int]:
-        """
+
 
     def encode_raw(self) -> bytes:
         return self.pyvalue._asdict().encode("utf8")
 
+"""
+
+"""
+class MeasFileFooter(Type[bytes]):
+    TAG = 130
+    TYPECLASS = TypeClass.CONTEXT
+    NATURE = [TypeNature.PRIMITIVE]
+
+    @staticmethod
+    def decode_raw(data: bytes, slc: slice = slice(3, -1)) -> str:
+        data = data[slc].decode("ascii")
+        return data
+"""
 
 file = "../asn_test_file.asn1"
 tag = "../e_measuredtime.asn1"
@@ -59,6 +73,7 @@ def readTag():
     print(decode_length(data, 1))
     # decoded, nxt = decode(data)
     print(decode(data))
+    print(MeasFileFooter.decode_raw(data))
 
 
 # readFile()
