@@ -22,8 +22,8 @@ class EsnTimestamp(Type[EsnTimestamp]):
 
     @staticmethod
     def decode_raw(data: bytes, slc: slice = slice(None)) -> str:
-        # return EsnTimestamp(GeneralizedTime(Type[data[slc].decode()]))
-        return EsnTimestamp(data[slc].decode())
+        # return EsnTimestamp(data[slc].decode())
+        return GeneralizedTime(data[slc].decode())
 
     """
              types.py:119
