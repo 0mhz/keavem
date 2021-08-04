@@ -3,16 +3,20 @@ from datetime import datetime
 from typing import NamedTuple
 
 from x690 import decode
-from x690.types import GeneralizedTime, MeasFileFooter, Type
-from x690.util import TypeClass, TypeNature, decode_length, visible_octets, wrap
+from x690.types import Type
+from x690.util import TypeClass, TypeNature, decode_length, visible_octets
+
+# Fix the imports
+# @M.A. The _init_ only contains "decode" for _all_
+# How to import "all" of x690.types?
+
 
 """
+Just ignore this. First time.
 
 class EsnTimestamp(NamedTuple):
     value: str
-
-
-#        #timezone: str
+#   timezone: str
 
 # class EsnTimestamp(Type[GeneralizedTime(Type[datetime])]):
 class EsnTimestamp(Type[EsnTimestamp]):
@@ -41,17 +45,27 @@ class EsnTimestamp(Type[EsnTimestamp]):
 
 """
 
-"""
+
 class MeasFileFooter(Type[bytes]):
     TAG = 130
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.PRIMITIVE]
 
     @staticmethod
-    def decode_raw(data: bytes, slc: slice = slice(3, -1)) -> str:
+    def decode_raw(data: bytes, slc: slice = slice(2, -1)) -> str:
         data = data[slc].decode("ascii")
         return data
-"""
+
+    # This has been made in the middle of the night.
+    # Probably decode once and return objet as a tuple(time, timezone)
+    def get_time(data: bytes, slc: slice = slice(2, 16)) -> str:
+        data = data[slc].decode("ascii")
+        return data
+
+    def get_timezone(data: bytes, slc: slice = slice(16, -1)) -> str:
+        data = data[slc].decode("ascii")
+        return data
+
 
 file = "../asn_test_file.asn1"
 tag = "../e_measuredtime.asn1"
@@ -74,6 +88,8 @@ def readTag():
     # decoded, nxt = decode(data)
     print(decode(data))
     print(MeasFileFooter.decode_raw(data))
+    print(MeasFileFooter.get_time(data))
+    print(MeasFileFooter.get_timezone(data))
 
 
 # readFile()
