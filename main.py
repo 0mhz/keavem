@@ -22,7 +22,8 @@ class EsnTimestamp(Type[EsnTimestamp]):
 
     @staticmethod
     def decode_raw(data: bytes, slc: slice = slice(None)) -> str:
-        return EsnTimestamp(GeneralizedTime(Type[data[slc].decode()]))
+        # return EsnTimestamp(GeneralizedTime(Type[data[slc].decode()]))
+        return EsnTimestamp(data[slc].decode())
 
     """
              types.py:119
@@ -34,8 +35,8 @@ class EsnTimestamp(Type[EsnTimestamp]):
                 ) -> Tuple[TPopType, int]:
         """
 
-    # def encode_raw(self) -> bytes:
-    #    return self.pyvalue._asdict().encode("utf8")
+    def encode_raw(self) -> bytes:
+        return self.pyvalue._asdict().encode("utf8")
 
 
 file = "../asn_test_file.asn1"
