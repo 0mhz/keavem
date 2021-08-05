@@ -1,5 +1,10 @@
+"""
+    This module contains the class definitions for the ASN.1 tags but will be
+    obsolete once an automatic parsing of the syntax has been implemented
+"""
+
 from x690.types import Type
-from x690.util import *
+from x690.util import TypeClass, TypeNature
 
 
 class MeasFileFooter(Type[bytes]):
