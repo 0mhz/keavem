@@ -17,7 +17,7 @@ header = "../e_fileheader.asn1"
     (57 bytes) which contains the tags FormatVersion, Sendername, Sendertype,
     Vendorname and CollectionStartTime.
     FormatVersion [0x80, 0x01, 0x01] equals SOH (start of heading) in the
-    ASCII table which is weird as an Integer is expected
+    ASCII table which is weird since an Integer is expected
 
     The Sendername begins with a tag 0x81 and is 23 bytes long
     T81 L17 V[  42 53 43 47 41 52 45 2f 47
