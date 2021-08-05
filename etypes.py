@@ -1,8 +1,7 @@
 """
-    This module contains the class definitions for the ASN.1 tags but will
-    (probably) be obsolete once an automatic parsing of the syntax has been
-    implemented. For now, this is used to decode the header in order to know
-    which specific sender type the BSC is using
+    This module contains the class definitions for the ASN.1 tags that will be
+    used to decode the header in order to know which specific sender type the
+    BSC is using to enable an automatic parsing of the syntax
 """
 
 from x690.types import GeneralizedTime, Integer, Null, Type, Utf8String
