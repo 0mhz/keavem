@@ -65,9 +65,124 @@ class LogStartTime(Type[str]):
 
 
 class MeasureData(Type[bytes]):
+    # Sequence of: Id, Info
     TAG = Null
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.CONSTRUCTED]
+
+
+class Id(Type[bytes]):
+    # Sequence of Username, DistinguishedName
+    TAG = Null
+    TYPECLASS = TypeClass.CONTEXT
+    NATURE = [TypeNature.CONSTRUCTED]
+
+
+class Username(Type[bytes]):
+    TAG = Null
+    TYPECLASS = TypeClass.CONTEXT
+    NATURE = [TypeNature.PRIMITIVE]
+
+    @staticmethod
+    def decode_raw(data: bytes, slc: slice) -> str:
+        return super().decode_raw(data, slc=slc)
+        # Return PrintableString
+
+
+class DistinguishedName(Type[bytes]):
+    TAG = Null
+    TYPECLASS = TypeClass.CONTEXT
+    NATURE = [TypeNature.PRIMITIVE]
+
+    @staticmethod
+    def decode_raw(data: bytes, slc: slice) -> str:
+        return super().decode_raw(data, slc=slc)
+        # Return PrintableString
+
+
+class MInfo(Type[bytes]):
+    # Sequence of MStartTime, GranulPeriod, MTypes, MValues
+    TAG = Null
+    TYPECLASS = TypeClass.CONTEXT
+    NATURE = [TypeNature.CONSTRUCTED]
+
+
+class MStartTime(Type[bytes]):
+    TAG = Null
+    TYPECLASS = TypeClass.CONTEXT
+    NATURE = [TypeNature.PRIMITIVE]
+
+    @staticmethod
+    def decode_raw(data: bytes, slc: slice = slice(None)) -> str:
+        return TimeStamp.get_time(data)
+
+
+class MGranulPeriod(Type[bytes]):
+    # Integer
+    TAG = Null
+    TYPECLASS = TypeClass.CONTEXT
+    NATURE = [TypeNature.PRIMITIVE]
+
+
+class MTypes(Type[bytes]):
+    # Sequence of MType
+    TAG = Null
+    TYPECLASS = TypeClass.CONTEXT
+    NATURE = [TypeNature.CONSTRUCTED]
+
+
+class MValues(Type[bytes]):
+    # Sequence of MValue
+    TAG = Null
+    TYPECLASS = TypeClass.CONTEXT
+    NATURE = [TypeNature.CONSTRUCTED]
+
+
+class MType(Type[bytes]):
+    TAG = Null
+    TYPECLASS = TypeClass.CONTEXT
+    NATURE = [TypeNature.PRIMITIVE]
+
+    @staticmethod
+    def decode_raw(data: bytes, slc: slice) -> str:
+        return super().decode_raw(data, slc=slc)
+        # Return PrintableString
+
+
+class MValue(Type[bytes]):
+    # Sequence of ObjectInstanceId, Seq. of Result, SuspectFlag
+    TAG = Null
+    TYPECLASS = TypeClass.CONTEXT
+    NATURE = [TypeNature.CONSTRUCTED]
+
+
+class ObjectInstanceId(Type[bytes]):
+    TAG = Null
+    TYPECLASS = TypeClass.CONTEXT
+    NATURE = [TypeNature.PRIMITIVE]
+
+    @staticmethod
+    def decode_raw(data: bytes, slc: slice) -> str:
+        return super().decode_raw(data, slc=slc)
+        # Return PrintableString
+
+
+class Result(Type[bytes]):
+    # CHOICE of Integer, Real, None
+    TAG = Null
+    TYPECLASS = TypeClass.CONTEXT
+    # NATURE = [TypeNature.CONSTRUCTED]
+
+
+class SuspectFlag(Type[bytes]):
+    TAG = Null
+    TYPECLASS = TypeClass.CONTEXT
+    NATURE = [TypeNature.PRIMITIVE]
+
+    @staticmethod
+    def decode_raw(data: bytes, slc: slice) -> str:
+        return super().decode_raw(data, slc=slc)
+        # Return Boolean
 
 
 class FileFooter(Type[bytes]):
@@ -103,3 +218,9 @@ class TimeStamp(Type[bytes]):
     def get_timezone(data: bytes, slc: slice = slice(16, -1)) -> str:
         data = data[slc].decode("ascii")
         return data
+
+
+class PrintableString(Type[bytes]):
+    TAG = Null
+    TYPECLASS = TypeClass.CONTEXT
+    NATURE = [TypeNature.PRIMITIVE]

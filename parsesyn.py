@@ -7,6 +7,7 @@ from etypes import *
 
 
 class DefinitionType:
+    # Decode header, read tag 0x81, search string for Def, branch into class
     pass
 
 
