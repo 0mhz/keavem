@@ -1,4 +1,5 @@
 from x690 import decode
+from x690.types import Type
 from x690.util import decode_length, visible_octets
 
 import etypes as etypes
@@ -12,6 +13,9 @@ def readFile():
     data = open(file, "rb").read()
     value, nxt = decode(data)
     print(value.pretty())
+
+    # for x in Type.all():
+    #    print(x)
 
     while nxt < len(data):
         value, nxt = decode(data, nxt)
@@ -28,13 +32,13 @@ def readTag():
         decoded, nxt = decode(data)
         print(MeasFileFooter.decode_raw(data))
         print(MeasFileFooter.get_time(data))
-        print(MeasFileFooter.get_timezone(data))
+        print(MeasFilqeFooter.get_timezone(data))
         print(FileFooter.get_time(data))
         print(FileFooter.get_timezone(data))
     """
 
-    print(etypes.FileFooter.decode_raw(data))
-    print(etypes.FileFooter.use_gentime(data))
+    # print(etypes.FileFooter.decode_raw(data))
+    # print(etypes.FileFooter.use_gentime(data))
 
 
 def readHeader():
@@ -44,5 +48,6 @@ def readHeader():
 
 
 # readTag()
+# readHeader()
+
 readFile()
-readHeader()
