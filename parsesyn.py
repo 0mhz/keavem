@@ -3,7 +3,7 @@
     decoded header definition
 """
 
-from etypes import *
+import etypes as etypes
 
 
 class DefinitionType:
