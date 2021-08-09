@@ -4,7 +4,10 @@
     BSC is using to enable an automatic parsing of the syntax
 """
 
-from x690.types import GeneralizedTime, Integer, Null, Type, Utf8String
+from dataclasses import dataclass
+from datetime import date, datetime, time
+
+from x690.types import GeneralizedTime, Integer, Null, Type, Utf8String, decode
 from x690.util import TypeClass, TypeNature
 
 
@@ -15,60 +18,112 @@ class DataCollection(Type[bytes]):
     NATURE = [TypeNature.CONSTRUCTED]
 
 
-class FileHeader(Type[bytes]):
+@dataclass
+class FileHeaderInfo:
+    FormatVersion: str
+    SenderName: str
+    SenderType: int
+    VendorName: str
+    CollStartTime: datetime
+
+
+class FileHeader(Type[str]):
     # Sequence of:
     # FormatVersion, Sendername, Sendertype, Vendorname, CollectionStartTime
-    # actually TAG = 0xa0 but 0x00 somehow yields a better result in decode()
-    TAG = 0x00
-    # DEC 160
+    # actually TAG = 0xa0, dec 160
+    TAG = 0
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.CONSTRUCTED]
 
+    # @staticmethod
+    # def decode_raw(data: bytes, slc: slice) -> dict:
+    #     FormatVersion, next = decode(data, slc.start)
+    #     SenderName, next = decode(data, next)
+    #     SenderType, next = decode(data, next)
+    #     VendorName, next = decode(data, next)
+    #     CollStartTime, next = decode(data, next)
+    #     return {"FormatVersion":FormatVersion, "SenderName":SenderName, "SenderType": SenderType, "VendorName": VendorName, "CollStartTime": CollStartTime}
 
-class FormatVersion(Type[Integer]):
-    TAG = 0x80
+    @staticmethod
+    def decode_raw(data: bytes, slc: slice = slice(None)) -> FileHeaderInfo:
+        FormatVersion, next = decode(data, slc.start)
+        SenderName, next = decode(data, next)
+        SenderType, next = decode(data, next)
+        SenderType = 1
+        VendorName, next = decode(data, next)
+        CollStartTime, next = decode(data, next)
+        """
+        print(FormatVersion.pretty())
+        print(SenderName.pretty())
+        print(VendorName.pretty())
+        print(CollStartTime.pretty())
+        """
+        return FileHeaderInfo(
+            FormatVersion, SenderName, SenderType, VendorName, CollStartTime
+        )
+
+
+# actually its an integer
+class FormatVersion(Type[str]):
+    TAG = 0
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.PRIMITIVE]
 
+    @staticmethod
+    def decode_raw(data: bytes, slc: slice) -> str:
+        return data[slc].decode("ascii")
 
-class SenderName(Type[Utf8String]):
-    TAG = 0x81
+
+class SenderName(Type[str]):
+    TAG = 1
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.PRIMITIVE]
+
+    @staticmethod
+    def decode_raw(data: bytes, slc: slice) -> str:
+        return data[slc].decode("ascii")
 
 
 class SenderType(Type[bytes]):
     # String length 0-8
     # TAG = 0x82 Clash with FileFooter
-    TAG = Null
+    TAG = 2
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.PRIMITIVE]
 
 
-class VendorName(Type[bytes]):
+class VendorName(Type[str]):
     # String length 0-32
-    TAG = 0x83
-    TYPECLASS = TypeClass.CONTEXT
-    NATURE = [TypeNature.PRIMITIVE]
-
-
-class LogStartTime(Type[str]):
-    # Actually a timestamp of type GeneralizedTime (presumably X.690 spec.)
-    TAG = 0x84
+    TAG = 3
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.PRIMITIVE]
 
     @staticmethod
-    def decode_raw(data: bytes, slc: slice = slice(2, -1)) -> str:
-        data = data[slc].decode("ascii")
-        return GeneralizedTime(data)
+    def decode_raw(data: bytes, slc: slice) -> str:
+        return data[slc].decode("ascii")
+
+
+class CollStartTime(Type[str]):
+    TAG = 4
+    TYPECLASS = TypeClass.CONTEXT
+    NATURE = [TypeNature.PRIMITIVE]
+
+    @staticmethod
+    def decode_raw(data: bytes, slc: slice) -> str:
+        date_string = data[slc].decode("ascii")
+        time = datetime.strptime((date_string[0:14]), "%Y%m%d%H%M%S")
+        return time.strftime("%d/%m/%Y %H:%M:%S")  # opt; assume TZ=Z (GMT)
 
 
 class MeasureData(Type[bytes]):
     # Sequence of: Id, Info
-    TAG = Null
+    TAG = 1  # Tag = 1
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.CONSTRUCTED]
+
+    def pretty(self, depth: int) -> str:
+        # return super().pretty(depth=depth)
+        return "MeasureData truncated (etypes.py:108)"
 
 
 class Id(Type[bytes]):
@@ -83,10 +138,12 @@ class Username(Type[bytes]):
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.PRIMITIVE]
 
+    """
     @staticmethod
     def decode_raw(data: bytes, slc: slice) -> str:
         return super().decode_raw(data, slc=slc)
         # Return PrintableString
+    """
 
 
 class DistinguishedName(Type[bytes]):
@@ -94,27 +151,31 @@ class DistinguishedName(Type[bytes]):
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.PRIMITIVE]
 
+    """
     @staticmethod
     def decode_raw(data: bytes, slc: slice) -> str:
         return super().decode_raw(data, slc=slc)
         # Return PrintableString
+    """
 
 
 class MInfo(Type[bytes]):
-    # Sequence of MStartTime, GranulPeriod, MTypes, MValues
+    # Sequence of MCollStartTime, GranulPeriod, MTypes, MValues
     TAG = Null
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.CONSTRUCTED]
 
 
-class MStartTime(Type[bytes]):
+class MCollStartTime(Type[bytes]):
     TAG = Null
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.PRIMITIVE]
 
+    """
     @staticmethod
     def decode_raw(data: bytes, slc: slice = slice(None)) -> str:
         return TimeStamp.get_time(data)
+    """
 
 
 class MGranulPeriod(Type[bytes]):
@@ -143,10 +204,12 @@ class MType(Type[bytes]):
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.PRIMITIVE]
 
+    """
     @staticmethod
     def decode_raw(data: bytes, slc: slice) -> str:
         return super().decode_raw(data, slc=slc)
         # Return PrintableString
+    """
 
 
 class MValue(Type[bytes]):
@@ -163,7 +226,7 @@ class ObjectInstanceId(Type[bytes]):
 
     @staticmethod
     def decode_raw(data: bytes, slc: slice) -> str:
-        return super().decode_raw(data, slc=slc)
+        pass
         # Return PrintableString
 
 
@@ -181,15 +244,23 @@ class SuspectFlag(Type[bytes]):
 
     @staticmethod
     def decode_raw(data: bytes, slc: slice) -> str:
-        return super().decode_raw(data, slc=slc)
+        pass
         # Return Boolean
 
 
 class FileFooter(Type[bytes]):
-    TAG = 0x82
+    # 0x82
+    TAG = 2  # Tag = 2
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.PRIMITIVE]
 
+    @staticmethod
+    def decode_raw(data: bytes, slc: slice) -> str:
+        date_string = data[slc].decode("ascii")
+        time = datetime.strptime((date_string[0:14]), "%Y%m%d%H%M%S")
+        return time.strftime("%d/%m/%Y %H:%M:%S")  # opt; assume TZ=Z (GMT)
+
+    """
     @staticmethod
     def decode_raw(data: bytes, slc: slice = slice(None)) -> str:
         return TimeStamp.get_time(data)
@@ -197,6 +268,7 @@ class FileFooter(Type[bytes]):
     def use_gentime(data: bytes, slc: slice = slice(2, -1)) -> str:
         data = data[slc].decode("ascii")
         return GeneralizedTime(data)
+    """
 
 
 class TimeStamp(Type[bytes]):
@@ -204,6 +276,7 @@ class TimeStamp(Type[bytes]):
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.PRIMITIVE]
 
+    """
     # This has been made in the middle of the night.
     # Probably decode once and return object as a tuple(time, timezone)
     @staticmethod
@@ -218,6 +291,7 @@ class TimeStamp(Type[bytes]):
     def get_timezone(data: bytes, slc: slice = slice(16, -1)) -> str:
         data = data[slc].decode("ascii")
         return data
+    """
 
 
 class PrintableString(Type[bytes]):

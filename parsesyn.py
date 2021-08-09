@@ -3,7 +3,7 @@
     decoded header definition
 """
 
-import etypes as etypes
+import etypes as etypesgit
 
 
 class DefinitionType:
