@@ -37,7 +37,7 @@ class SenderName(Type[Utf8String]):
     NATURE = [TypeNature.PRIMITIVE]
 
 
-class SenderType(Type[str]):
+class SenderType(Type[bytes]):
     # String length 0-8
     # TAG = 0x82 Clash with FileFooter
     TAG = Null
@@ -45,7 +45,7 @@ class SenderType(Type[str]):
     NATURE = [TypeNature.PRIMITIVE]
 
 
-class VendorName(Type[str]):
+class VendorName(Type[bytes]):
     # String length 0-32
     TAG = 0x83
     TYPECLASS = TypeClass.CONTEXT
