@@ -71,7 +71,7 @@ class FormatVersion(Type[str]):
 
     @staticmethod
     def decode_raw(data: bytes, slc: slice) -> str:
-        return data[slc].decode("ascii")
+        return "FormatVersion truncated due to tag clash in (presumably) MeasureStartTime"
 
 
 class SenderName(Type[str]):
@@ -81,7 +81,7 @@ class SenderName(Type[str]):
 
     @staticmethod
     def decode_raw(data: bytes, slc: slice) -> str:
-        return data[slc].decode("ascii")
+        return "Sendername truncated due to tag clash in (presumably) GranularityTime"
 
 
 class SenderType(Type[bytes]):
@@ -121,9 +121,29 @@ class MeasureData(Type[bytes]):
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.CONSTRUCTED]
 
+    @staticmethod
+    def decode_raw(data: bytes, slc: slice) -> str:
+        value, next = decode(data[slc], slc.start)
+        print(value.pretty())
+
+        while next < len(data):
+            value, next = decode(data, next)
+            print(value.pretty())
+
+        return "Output truncated"
+
+    """
+    @staticmethod
+    def decode_raw(data: bytes, slc: slice) -> str:
+        id, next = decode(data[slc], slc.start)
+        print(id.pretty())
+        return "bla"
+    """
+    """
     def pretty(self, depth: int) -> str:
-        # return super().pretty(depth=depth)
+        #return super().pretty(depth=depth)
         return "MeasureData truncated (etypes.py:108)"
+    """
 
 
 class Id(Type[bytes]):
@@ -160,13 +180,13 @@ class DistinguishedName(Type[bytes]):
 
 
 class MInfo(Type[bytes]):
-    # Sequence of MCollStartTime, GranulPeriod, MTypes, MValues
+    # Sequence of MStartTime, GranulPeriod, MTypes, MValues
     TAG = Null
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.CONSTRUCTED]
 
 
-class MCollStartTime(Type[bytes]):
+class MStartTime(Type[bytes]):
     TAG = Null
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.PRIMITIVE]
@@ -187,14 +207,14 @@ class MGranulPeriod(Type[bytes]):
 
 class MTypes(Type[bytes]):
     # Sequence of MType
-    TAG = Null
+    TAG = 2
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.CONSTRUCTED]
 
 
 class MValues(Type[bytes]):
     # Sequence of MValue
-    TAG = Null
+    TAG = None
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.CONSTRUCTED]
 
@@ -219,7 +239,7 @@ class MValue(Type[bytes]):
     NATURE = [TypeNature.CONSTRUCTED]
 
 
-class ObjectInstanceId(Type[bytes]):
+class ObjectInstanceId(Type[str]):
     TAG = Null
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.PRIMITIVE]
@@ -237,13 +257,13 @@ class Result(Type[bytes]):
     # NATURE = [TypeNature.CONSTRUCTED]
 
 
-class SuspectFlag(Type[bytes]):
+class SuspectFlag(Type[bool]):
     TAG = Null
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.PRIMITIVE]
 
     @staticmethod
-    def decode_raw(data: bytes, slc: slice) -> str:
+    def decode_raw(data: bytes, slc: slice) -> bool:
         pass
         # Return Boolean
 

@@ -7,6 +7,7 @@ import etypes as etypes
 file = "../asn_test_file.asn1"
 tag = "../e_measuredtime.asn1"
 header = "../e_fileheader.asn1"
+cmdata = "../e_corruptedmdata.asn1"
 
 
 def readFile():
@@ -22,32 +23,12 @@ def readFile():
         print(value.pretty())
 
 
-def readTag():
-    data = open(tag, "rb").read()
+def readSingle():
+    data = open(cmdata, "rb").read()
     print(visible_octets(data))
-    print(decode_length(data, 1))
-    print(decode(data))
-
-    """
-        decoded, nxt = decode(data)
-        print(MeasFileFooter.decode_raw(data))
-        print(MeasFileFooter.get_time(data))
-        print(MeasFilqeFooter.get_timezone(data))
-        print(FileFooter.get_time(data))
-        print(FileFooter.get_timezone(data))
-    """
-
-    # print(etypes.FileFooter.decode_raw(data))
-    # print(etypes.FileFooter.use_gentime(data))
-
-
-def readHeader():
-    data = open(header, "rb").read()
-    print(visible_octets(data))
+    # print(decode_length(data, 50))
     print(decode_length(data, 1))
 
 
-# readTag()
-# readHeader()
-
+readSingle()
 readFile()
