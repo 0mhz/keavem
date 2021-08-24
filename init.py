@@ -10,7 +10,7 @@ header = "../e_fileheader.asn1"
 cmdata = "../e_corruptedmdata.asn1"
 
 
-def readFile():
+def readFileInfo():
     data = open(file, "rb").read()
     document, _ = decode(data)
     print(
@@ -20,13 +20,18 @@ def readFile():
     print(
         f"{type(document.value[1])} contains: {type(document.value[1].value)} : {document.value[1].value}\n"
     )
-    # print(f"{type(document.value[1].value[0])} contains: {type(document.value[1].value[0].value)} : {document.value[1].value[0].value}\n")
-    # print(f"{type(document.value[1].value[1])} contains: {type(document.value[1].value[1].value)} : {document.value[1].value[1]}\n")
+    print(
+        f"{type(document.value[1].value[0])} contains: {type(document.value[1].value[0].value)} : {document.value[1].value[0].value}\n"
+    )
+    print(
+        f"{type(document.value[1].value[1])} contains: {type(document.value[1].value[1].value)} : {document.value[1].value[1]}\n"
+    )
 
     i = 0
-    while i < 3:
+    while i < 4:
         print(
-            f"{type(document.value[1].value[1].value[i])} contains: {type(document.value[1].value[1].value[i].value)} : {document.value[1].value[1].value[i].value}"
+            # f"{type(document.value[1].value[1].value[i])} contains: {type(document.value[1].value[1].value[i].value)} : {document.value[1].value[1].value[i].value}"
+            f"{type(document.value[1].value[1].value[i])} contains: {type(document.value[1].value[1].value[i].value)}"
         )
         i = i + 1
 
@@ -39,6 +44,12 @@ def readFile():
     # print(document.value[0].value.VendorName)
 
 
+def readFile():
+    data = open(file, "rb").read()
+    value, _ = decode(data)
+    print(value.pretty())
+
+
 def readSingle():
     data = open(cmdata, "rb").read()
     print(visible_octets(data))
@@ -46,5 +57,5 @@ def readSingle():
     print(decode_length(data, 1))
 
 
-# readSingle()
-readFile()
+readFileInfo()
+# readFile()

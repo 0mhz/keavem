@@ -144,7 +144,7 @@ class Test(Type[bytes]):
             x, next = decode(data, next)
             print("******** MeasureInfo[Cont, Constr, 3]: Begin ********")
             print(type(x))
-            print(x)
+            print(x.pretty())
             print("******** MeasureInfo[Cont, Constr, 3]: End ******")
             output.append(x)
         return output
