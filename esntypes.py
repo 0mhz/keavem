@@ -5,9 +5,9 @@
 from dataclasses import dataclass
 from datetime import date, datetime, time
 from os import stat
-from typing import List, Union
+from typing import List, Sequence, Union
 
-from x690.types import GraphicString, Integer, Type, decode
+from x690.types import Boolean, GraphicString, Integer, Type, decode
 from x690.util import TypeClass, TypeNature, visible_octets
 
 
@@ -78,7 +78,7 @@ class MeasFileHeader(Type[MeasFileHeaderStruct]):
 
 
 class HdFileFormatVersion(Type[str]):
-    TAG = 0
+    TAG = None  # 0
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.PRIMITIVE]
 
@@ -255,10 +255,69 @@ class MeasType(Type[GraphicString]):
         return result
 
 
-class MeasValue(Type[bytes]):
+class MeasValueWrapper(Type[bytes]):
+    """
     TAG = None
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.CONSTRUCTED]
+    """
+
+    TAG = 1
+    TYPECLASS = TypeClass.APPLICATION
+    NATURE = [TypeNature.PRIMITIVE]
+
+    @staticmethod
+    def decode_raw(data: bytes, slc: slice) -> bytes:
+        item, _ = decode(data, slc.start)
+        # print(item.pretty())
+        return item
+
+
+"""
+class MeasValue(Type[bytes]):
+    TAG = 9
+    TYPECLASS = TypeClass.APPLICATION
+    NATURE = [TypeNature.PRIMITIVE]
+
+    @staticmethod
+    def decode_raw(data: bytes, slc: slice) -> bytes:
+        item, _ = decode(data, slc.start)
+        #print(item.pretty())
+        return item
+
+class SomeValue(Type[bytes]):
+    TAG = 14
+    TYPECLASS = TypeClass.UNIVERSAL
+    NATURE = [TypeNature.CONSTRUCTED]
+
+    @staticmethod
+    def decode_raw(data: bytes, slc: slice) -> bytes:
+        item, _ = decode(data, slc.start)
+        #print(item.pretty())
+        return item
+
+class ItsGettingWorse(Type[bytes]):
+    TAG = 24
+    TYPECLASS = TypeClass.APPLICATION
+    NATURE = [TypeNature.PRIMITIVE]
+
+    @staticmethod
+    def decode_raw(data: bytes, slc: slice) -> bytes:
+        item, _ = decode(data, slc.start)
+        #print(item.pretty())
+        return item
+
+class ThisCantBe(Type[bytes]):
+    TAG = 20
+    TYPECLASS = TypeClass.APPLICATION
+    NATURE = [TypeNature.PRIMITIVE]
+
+    @staticmethod
+    def decode_raw(data: bytes, slc: slice) -> bytes:
+        item, _ = decode(data, slc.start)
+        #print(item.pretty())
+        return item
+"""
 
 
 class MeasValueObjInstId(Type[str]):
@@ -275,13 +334,16 @@ class MeasValueObjInstId(Type[str]):
 
 
 class TestMeasValueObjInstId(Type[str]):
+    """
+    TAG = None
+    TYPECLASS = TypeClass.CONTEXT
+    NATURE = [TypeNature.CONSTRUCTED]
+    """
+
     TAG = 1  # 65
     TYPECLASS = TypeClass.APPLICATION
     NATURE = [TypeNature.PRIMITIVE]
-
-    @staticmethod
-    def decode_raw(data: bytes, slc: slice) -> str:
-        return "Assuming ObjInstId"
+    # **** This might be MeasValue! ****
 
 
 class MeasValueResults(Type[bytes]):
@@ -308,7 +370,7 @@ class MeasResult(Type[bytes]):
 
 
 class FileFooter(Type[str]):
-    TAG = 2
+    TAG = None  # 2
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.PRIMITIVE]
 
@@ -321,3 +383,67 @@ class FileFooter(Type[str]):
         except ValueError:
             return ""
             # Will collide with MeasValueSuspectFlag
+
+
+class FirstObjectMeta(Type[Union[HdFileFormatVersion, TestMeasValueObjInstId]]):
+    # Change TestMeasValueObjInst to MeasValue, uncomment the large block and switch the blocks
+    # in TestMeasValueObjInstId to above to reproduce errors
+    """
+    File format version is one byte long integer (1 or 0)
+    ObjInstId = "OBJNAME.OBJINDIVNAME-1"
+
+    !Might actually be the MeasValue instead o ObjInst!
+    """
+    TAG = 0
+    TYPECLASS = TypeClass.CONTEXT
+    NATURE = [TypeNature.PRIMITIVE]
+
+    @staticmethod
+    def decode_raw(
+        data: bytes, slc: slice
+    ) -> Union[HdFileFormatVersion, TestMeasValueObjInstId]:
+        item, _ = decode(data, slc.start)
+        print(item.pretty())
+        # if len(item) > 1 and item.contains("."):
+        if not type(item) is Boolean:
+            return TestMeasValueObjInstId(item)
+        return HdFileFormatVersion(item)
+
+
+class EndObjectMeta(Type[Union[FileFooter, MeasValueSuspectFlag]]):
+    TAG = 2
+    TYPECLASS = TypeClass.CONTEXT
+    NATURE = [TypeNature.PRIMITIVE]
+
+    @staticmethod
+    def decode_raw(
+        data: bytes, slc: slice
+    ) -> Union[FileFooter, MeasValueSuspectFlag]:
+        item, _ = decode(data[slc])
+        print(item.value)
+
+        # len(b'\x00') == 1
+        # len(b'202001010000Z') == 13
+        if len(item) > 1:
+            return FileFooter(item.value)
+        return MeasValueSuspectFlag(item.value)
+
+
+class TestEndObjectMeta(Type[Union[FileFooter, MeasValueSuspectFlag]]):
+    TAG = 2
+    TYPECLASS = TypeClass.CONTEXT
+    NATURE = [TypeNature.PRIMITIVE]
+
+    @staticmethod
+    def decode_raw(
+        data: bytes, slc: slice
+    ) -> Union[FileFooter, MeasValueSuspectFlag]:
+        if slc.start > slc.stop:
+            item, _ = decode(data, slc.start)
+            print(item.value)
+
+            if len(item) > 1:
+                return FileFooter(item.value)
+            return MeasValueSuspectFlag(item.value)
+        else:
+            return FileFooter("SlcError")
