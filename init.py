@@ -2,12 +2,8 @@ from x690 import decode
 from x690.util import decode_length, visible_octets
 from x690.types import Sequence, Type, decode
 
-# import esntypes as etypes
-# import collisions as collisions
-# import exhumablock as btypes
 
-
-import retry as retry
+import retry_again as retryagain
 
 file = "../asn_test_file.asn1"
 tag = "../e_measuredtime.asn1"
@@ -75,20 +71,23 @@ def readBlock():
 
 
 def readTestFile():
-    data = open(file, "rb").read()
+    bscgare = "../bscgareg21q1-1.asn1"
+    data = open(bscgare, "rb").read()
     result, _ = decode(data, enforce_type=Sequence)
     # print(result.pretty())
-    # print(f"\n\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n{result}\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    print(
+        f"\n\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n{result}\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    )
 
     # fh = result[0]
     # print(fh)
     # ff = result[2]
     # print(ff)
 
-    # print("\n")
+    # # print("\n")
 
-    md = result[1]
-    print(md.pretty())
+    # md = result[1]
+    # print(md.pretty())
 
     # print(len(fh))
     # d, n = decode(fh)
