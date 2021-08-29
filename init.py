@@ -5,6 +5,8 @@ from x690.types import Sequence, Type, decode
 
 import retry_again as retry_again
 
+# import retry as retry
+
 file = "../asn_test_file.asn1"
 tag = "../e_measuredtime.asn1"
 header = "../e_fileheader.asn1"
@@ -74,8 +76,8 @@ def readTestFile():
     bscgare = "../bscgareg21q1-1.asn1"
     data = open(bscgare, "rb").read()
     result, _ = decode(data, enforce_type=Sequence)
-    # print(result.pretty())
-    print(f"\n\n\n{result.pretty()}\n")
+    print(result.pretty())
+    # print(f"\n\n\n{result.pretty()}\n")
 
     # fh = result[0]
     # print(fh)
@@ -84,8 +86,8 @@ def readTestFile():
 
     # # print("\n")
 
-    # md = result[1]
-    # print(md.pretty())
+    md = result[1]
+    print(md.pretty())
 
     # print(len(fh))
     # d, n = decode(fh)
