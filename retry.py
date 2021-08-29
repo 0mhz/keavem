@@ -27,11 +27,11 @@ class Meta_cc0(Type[Union[MeasFileHeader, NEId, str]]):
                 collection_begin_time_wrapped,
             ) = items
             return MeasFileHeader(
-                file_format_version_wrapped,
-                sender_name_wrapped,
-                sender_type_wrapped,
-                vendor_name_wrapped,
-                collection_begin_time_wrapped,
+                fileFormatVersion(file_format_version_wrapped.value),
+                senderName(sender_name_wrapped.value.value),
+                senderType(sender_type_wrapped.value.value),
+                vendorName(vendor_name_wrapped.value.value),
+                collection_begin_time_wrapped.value,
             )
         if len(items) == 2:
             ne_user_name_wrapped, ne_distinguished_name_wrapped = items
@@ -40,7 +40,7 @@ class Meta_cc0(Type[Union[MeasFileHeader, NEId, str]]):
 
 
 class Meta_cp2(
-    Type[Union[senderType, MeasFileFooter, suspectFlag, CatchMetaErrorBytes]]
+    Type[Union[senderType, MeasFileFooter, suspectFlag, CatchMetaError]]
 ):
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.PRIMITIVE]
@@ -49,12 +49,12 @@ class Meta_cp2(
     @staticmethod
     def decode_raw(
         data: bytes, slc: slice
-    ) -> Union[senderType, MeasFileFooter, suspectFlag, CatchMetaErrorBytes]:
+    ) -> Union[senderType, MeasFileFooter, suspectFlag, CatchMetaError]:
         item = data[slc]
         # Please see retry_readme
         if isinstance(item, bytes):
             if item == b"":
-                return senderType("1")
+                return senderType(SenderType("1"))
             if len(item) == 1:
                 suspect_flag_value = int(item.hex())
                 if len(str(suspect_flag_value)) == 1:
@@ -67,12 +67,10 @@ class Meta_cp2(
             )
             tzone_wrapped = date_string[14 - len(date_string) :]
             return MeasFileFooter(time_wrapped, tzone_wrapped)
-        return CatchMetaErrorBytes(item)
+        return CatchMetaError(item)
 
 
-class Meta_cp0(
-    Type[Union[fileFormatVersion, CatchX690Boolean, measObjInstId, str]]
-):
+class Meta_cp0(Type[Union[fileFormatVersion, measObjInstId, str]]):
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.PRIMITIVE]
     TAG = 0
@@ -80,7 +78,7 @@ class Meta_cp0(
     @staticmethod
     def decode_raw(
         data: bytes, slc: slice
-    ) -> Union[fileFormatVersion, CatchX690Boolean, measObjInstId, str]:
+    ) -> Union[fileFormatVersion, measObjInstId, str]:
         int_value = int.from_bytes(data[slc], "big", signed=True)
         if len(str(int_value)) == 1:
             return fileFormatVersion(int_value)
@@ -90,7 +88,7 @@ class Meta_cp0(
         return "measObjInstId (Invalid slice)"
 
 
-class SenderName(Type[Union[senderName, CatchMetaErrorStr]]):
+class Sendername(Type[Union[senderName, CatchMetaError]]):
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.PRIMITIVE]
     TAG = 1
@@ -98,7 +96,7 @@ class SenderName(Type[Union[senderName, CatchMetaErrorStr]]):
     @staticmethod
     def decode_raw(
         data: bytes, slc: slice
-    ) -> Union[senderName, CatchMetaErrorStr]:
+    ) -> Union[senderName, CatchMetaError]:
         # item, _ = decode(data, slc.start)
         try:
             value = data[slc].decode("ascii").rstrip()
@@ -109,11 +107,11 @@ class SenderName(Type[Union[senderName, CatchMetaErrorStr]]):
                     data, slc.start
                 )  # data[slc] is b'\x03\x84' at this point
             except:
-                return CatchMetaErrorStr("Invalid slice")
-            return CatchMetaErrorStr(value)
+                return CatchMetaError("Invalid slice")
+            return CatchMetaError(value)
 
 
-class SenderType(Type[str]):
+class Sendertype(Type[str]):
     # Meta_cp2
     pass
 
@@ -129,7 +127,7 @@ class VendorName(Type[vendorName]):
         return vendorName(value)
 
 
-class Meta_cp4(Type[Union[collectionBeginTime, CatchMetaErrorStr]]):
+class Meta_cp4(Type[Union[collectionBeginTime, CatchMetaError]]):
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.PRIMITIVE]
     TAG = 4
@@ -137,7 +135,7 @@ class Meta_cp4(Type[Union[collectionBeginTime, CatchMetaErrorStr]]):
     @staticmethod
     def decode_raw(
         data: bytes, slc: slice
-    ) -> Union[collectionBeginTime, CatchMetaErrorStr]:
+    ) -> Union[collectionBeginTime, CatchMetaError]:
         item, _ = decode(
             data, slc.start
         )  # This contains NumericString() again. I don't know what's wrong.

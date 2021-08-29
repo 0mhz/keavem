@@ -175,4 +175,4 @@ class MeasDataCollection:
 
 @dataclass
 class CatchMetaError:
-    item: Union[str, int, bytes]
+    item: Union[int, bytes, str, List[bytes], List[str]]
