@@ -143,15 +143,6 @@ class MeasFileHeader:
 
 
 @dataclass
-class MeasFileHeaderLegacy:
-    file_format_version: int
-    sender_name: str
-    sender_type: str
-    vendor_name: str
-    collection_begin_time: datetime
-
-
-@dataclass
 class measFileFooter:
     value: MeasFileFooter
 
@@ -163,12 +154,12 @@ class measData:
 
 @dataclass
 class measFileHeader:
-    value: MeasFileHeaderLegacy
+    value: MeasFileHeader
 
 
 @dataclass
 class MeasDataCollection:
-    file_header: MeasFileHeaderLegacy
+    file_header: MeasFileHeader
     meas_data: MeasData
     file_footer: MeasFileFooter
 

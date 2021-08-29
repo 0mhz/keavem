@@ -20,7 +20,22 @@ class MetaCC0(Type[Union[MeasFileHeader, CatchMetaError]]):
         while step < slc.stop:
             item, step = decode(data, step)
             items.append(item)
-        return CatchMetaError(items)
+        if len(items) == 5:
+            (
+                file_format_version_wrapped,
+                sender_name_wrapped,
+                sender_type_wrapped,
+                vendor_name_wrapped,
+                collection_begin_time_wrapped,
+            ) = items
+            return MeasFileHeader(
+                fileFormatVersion(file_format_version_wrapped.value),
+                senderName(sender_name_wrapped.value.value),
+                senderType(sender_type_wrapped.value.value),
+                vendorName(vendor_name_wrapped.value.value),
+                collection_begin_time_wrapped.value,
+            )
+        return CatchMetaError(f"Caught unknown number of items: {len(items)}")
 
 
 class MetaCP0(Type[Union[fileFormatVersion, CatchMetaError]]):
