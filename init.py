@@ -3,7 +3,7 @@ from x690.util import decode_length, visible_octets
 from x690.types import Sequence, Type, decode
 
 
-import retry_again as retryagain
+import retry_again as retry_again
 
 file = "../asn_test_file.asn1"
 tag = "../e_measuredtime.asn1"
@@ -75,9 +75,7 @@ def readTestFile():
     data = open(bscgare, "rb").read()
     result, _ = decode(data, enforce_type=Sequence)
     # print(result.pretty())
-    print(
-        f"\n\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n{result}\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-    )
+    print(f"\n\n\n{result.pretty()}\n")
 
     # fh = result[0]
     # print(fh)
