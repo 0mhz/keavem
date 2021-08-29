@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Union
-from x690.types import Boolean
+from typing import List, Sequence, Union
+from x690.types import Sequence
 
 
 @dataclass
@@ -49,7 +49,12 @@ class measValues:
 
 @dataclass
 class measTypes:
-    types = List[MeasType]
+    values = List[MeasType]
+
+
+@dataclass
+class measTypesLegacy:
+    values = List[str]
 
 
 @dataclass
@@ -59,7 +64,8 @@ class granularityPeriod:
 
 @dataclass
 class measStartTime:
-    value: datetime
+    time: datetime
+    tzone: str
 
 
 @dataclass
@@ -166,4 +172,4 @@ class MeasDataCollection:
 
 @dataclass
 class CatchMetaError:
-    item: Union[int, bytes, str, List[bytes], List[str]]
+    item: Union[int, bytes, str, List[bytes], List[str], Sequence]
