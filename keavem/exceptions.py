@@ -1,0 +1,2 @@
+class NoneArgumentException(Exception):
+    pass

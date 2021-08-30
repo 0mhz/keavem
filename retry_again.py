@@ -52,7 +52,7 @@ class MetaCP0(Type[Union[fileFormatVersion, measStartTime, CatchMetaError]]):
             return CatchMetaError(f"Caught unknown chunk: {chunk}")
 
 
-class MetaCP1(Type[Union[senderName, CatchMetaError]]):
+class MetaCP1(Type[Union[senderName, nEDistinguishedName, CatchMetaError]]):
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.PRIMITIVE]
     TAG = 1
@@ -60,13 +60,16 @@ class MetaCP1(Type[Union[senderName, CatchMetaError]]):
     @staticmethod
     def decode_raw(
         data: bytes, slc: slice
-    ) -> Union[senderName, CatchMetaError]:
+    ) -> Union[senderName, nEDistinguishedName, CatchMetaError]:
         try:
             chunk = data[slc]
             if len(chunk) > 1:
                 sender_name_wrapped = chunk.decode("ascii").rstrip()
                 return senderName(sender_name_wrapped)
-            return CatchMetaError(f"Caught unknown chunk: {chunk}")
+            if isinstance(chunk, bytes) and len(chunk) == 0:
+                if chunk == b"":
+                    return nEDistinguishedName("")
+            return CatchMetaError(f"Caught unknown chunk cp1: {chunk}")
         except:
             try:
                 items, _ = decode(data, slc.start, strict=True)

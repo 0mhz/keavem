@@ -76,7 +76,7 @@ def readTestFile():
     bscgare = "../bscgareg21q1-1.asn1"
     data = open(bscgare, "rb").read()
     result, _ = decode(data, enforce_type=Sequence)
-    print(result.pretty())
+    # print(result.pretty())
     # print(f"\n\n\n{result.pretty()}\n")
 
     # fh = result[0]
@@ -88,27 +88,6 @@ def readTestFile():
 
     md = result[1]
     print(md.pretty())
-
-    # print(len(fh))
-    # d, n = decode(fh)
-    # print(type(d))
-    # print(d)
-    # print(n)
-    # k, j = decode(fh, n)
-    # print(type(k))
-    # print(k)
-    # a, b = decode(fh, j)
-    # print(type(a))
-    # print(a)
-    # c, e = decode(fh, b)
-    # print(type(c))
-    # print(c)
-    # f, g = decode(fh, e)
-    # print(type(f))
-    # print(f)
-    # l, m = decode(fh, g)
-    # print(type(l))
-    # print(l)
 
     # mdv: collisions.MeasData = result[1].value
     # ff: collisions.MeasFileHeader = result[2].value
