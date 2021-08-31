@@ -1,10 +1,6 @@
 from os.path import dirname, join
 from datetime import datetime, timezone
-import pytest
 from x690 import decode
-
-import keavem.main
-import keavem.structure
 
 
 def get_data_chunk(item_pos):

@@ -1,9 +1,9 @@
 from os.path import dirname, join
 from datetime import datetime, timezone
-import pytest
 from x690 import decode
 
-import keavem.main
+import pytest
+import keavem.decode
 import keavem.structure
 
 
