@@ -12,4 +12,5 @@ class StrCodec(Type[str]):
         sender_name_wrapped, _ = decode(data, slc.start)
         for i in Type.all():
             print(i)
+        print(sender_name_wrapped.pretty())
         return sender_name_wrapped
