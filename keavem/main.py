@@ -1,48 +1,73 @@
-from dataclasses import dataclass
 from datetime import datetime
-from os import stat
 from typing import Union
-from x690.types import Boolean, Type, decode
+from x690.types import Type, decode
 from x690.util import TypeClass, TypeNature
 from keavem.structure import MeasFileHeader
 from keavem.exceptions import DecodingUndefinedItemCount
 
 
-class IntCodec(Type[int]):
+class ByteCodec(Type[bytes]):  # Isn't everything a byte codec here?
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.PRIMITIVE]
     TAG = 0
 
     @staticmethod
-    def decode_raw(data: bytes, slc: slice) -> int:
-        print(data[slc])
-        file_format_version_wrapped = int(data[slc].hex())
-        return file_format_version_wrapped
+    def decode_raw(data: bytes, slc: slice) -> bytes:
+        # return int.from_bytes(data[slc], "big")
+        # do the correct decoding later
+        return data[slc]
 
 
-class StrCodec(Type[str]):
+class StrByteCodec(Type[bytes]):
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.PRIMITIVE]
     TAG = 1
 
     @staticmethod
-    def decode_raw(data: bytes, slc: slice) -> str:
-        sender_name_wrapped, _ = decode(data, slc.start)
-        # sender_name_wrapped = data[slc]
-        print(sender_name_wrapped)
-        # return sender_name_wrapped.decode("ascii").rstrip()
-        return sender_name_wrapped
+    def decode_raw(data: bytes, slc: slice) -> bytes:
+        item = data[slc]
+        # return item.decode("ascii").strip()
+        return item
 
 
-class StrBoolDatetimeCodec(Type[Union[str, bool, datetime]]):
+class StrMetaCP2Codec(Type[Union[str, datetime]]):
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.PRIMITIVE]
     TAG = 2
 
     @staticmethod
-    def decode_raw(data: bytes, slc: slice) -> Union[str, bool, datetime]:
-        item, _ = decode(data, slc.start)
-        return item
+    def decode_raw(data: bytes, slc: slice) -> Union[str, datetime]:
+        chunk = data[slc]
+        if isinstance(chunk, bytes) and len(chunk) == 0:
+            return "1"
+        if 18 >= len(chunk) > 14:
+            return datetime.strptime(chunk.decode("ascii"), "%Y%m%d%H%M%S%z")
+        return chunk.decode("ascii")
+
+
+class StrMetaCP3Codec(Type[str]):
+    TYPECLASS = TypeClass.CONTEXT
+    NATURE = [TypeNature.PRIMITIVE]
+    TAG = 3
+
+    @staticmethod
+    def decode_raw(data: bytes, slc: slice) -> str:
+        item = data[slc]
+        return item.decode("ascii")
+
+
+class StrMetaCP4Codec(Type[Union[str, datetime]]):
+    # En Timestamp ass och e String
+    TYPECLASS = TypeClass.CONTEXT
+    NATURE = [TypeNature.PRIMITIVE]
+    TAG = 4
+
+    @staticmethod
+    def decode_raw(data: bytes, slc: slice) -> Union[str, datetime]:
+        chunk = data[slc].decode("ascii")
+        if 18 >= len(chunk) > 14:
+            return datetime.strptime(chunk, "%Y%m%d%H%M%S%z")
+        return chunk
 
 
 class HeaderCodec(Type[MeasFileHeader]):
