@@ -8,26 +8,16 @@ from keavem.structure import MeasFileHeader
 from keavem.exceptions import DecodingUndefinedItemCount
 
 
-class IntStrCodec(Type[Union[int, str]]):
+class IntCodec(Type[int]):
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.PRIMITIVE]
-    TAG = None  # 0
+    TAG = 0
 
     @staticmethod
-    def decode_raw(data: bytes, slc: slice) -> Union[int, str]:
-        items = []
-        step = slc.start
-        while step < slc.stop:
-            item, step = decode(data, step)
-            items.append(item)
-        if len(items) == 1:
-            if isinstance(items[0], Boolean):
-                print(data[slc])
-                file_format_version_wrapped = int(data[slc].hex())
-                return file_format_version_wrapped
-        else:
-            raise DecodingUndefinedItemCount(f"{len(items)}")
-        return ""  # Suppress error?
+    def decode_raw(data: bytes, slc: slice) -> int:
+        print(data[slc])
+        file_format_version_wrapped = int(data[slc].hex())
+        return file_format_version_wrapped
 
 
 class StrCodec(Type[str]):
@@ -47,7 +37,7 @@ class StrCodec(Type[str]):
 class StrBoolDatetimeCodec(Type[Union[str, bool, datetime]]):
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.PRIMITIVE]
-    TAG = None  # 2
+    TAG = 2
 
     @staticmethod
     def decode_raw(data: bytes, slc: slice) -> Union[str, bool, datetime]:
@@ -58,7 +48,7 @@ class StrBoolDatetimeCodec(Type[Union[str, bool, datetime]]):
 class HeaderCodec(Type[MeasFileHeader]):
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.CONSTRUCTED]
-    TAG = None  # 0
+    TAG = 0
 
     @staticmethod
     def decode_raw(data: bytes, slc: slice) -> MeasFileHeader:
@@ -66,6 +56,7 @@ class HeaderCodec(Type[MeasFileHeader]):
         step = slc.start
         while step < slc.stop:
             item, step = decode(data, step)
+            print(item)
             items.append(item)
         if len(items) == 5:
             (

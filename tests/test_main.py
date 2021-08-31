@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 import pytest
 from x690 import decode
 
-# import keavem.main
+import keavem.main
 
 
 def test_decode_header():
@@ -38,7 +38,6 @@ def test_decode_header_as_measfileheader():
 
 
 def test_decode_file_format_version():
-    pytest.skip()
     item_pos = 7
     filename = join(dirname(__file__), "data", "file.asn1")
     with open(filename, "rb") as header:
