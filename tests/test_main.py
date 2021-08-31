@@ -28,6 +28,7 @@ def test_decode_header_as_measfileheader():
     with open(filename, "rb") as header:
         data = header.read()
     result, _ = decode(data[5:])  # Header starts at pos 5
+
     # # assert result.value == keavem.main.MeasFileHeader(
     #     1,
     #     "BSCGARE/G21Q1.1",
@@ -35,6 +36,7 @@ def test_decode_header_as_measfileheader():
     #     "Ericsson",
     #     datetime(2021, 8, 24, 9, 15, tzinfo=timezone.utc),
     # )
+
 
 
 def test_decode_file_format_version():
