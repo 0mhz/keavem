@@ -1,2 +1,2 @@
-class NoneArgumentException(Exception):
+class DecodingUndefinedItemCount(Exception):
     pass

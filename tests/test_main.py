@@ -1,41 +1,9 @@
-import keavem.main
-from keavem.exceptions import NoneArgumentException
-from x690 import decode
-import pytest
 from os.path import dirname, join
 from datetime import datetime, timezone
+import pytest
+from x690 import decode
 
-# def test_sum():
-#     result = calc_sum(2, 3)
-#     assert result == 5
-
-# def test_negative_pos1_sum():
-#     result = calc_sum(-1, 1)
-#     assert result == 0
-
-# def test_negative_pos2_sum():
-#     result = calc_sum(1, -1)
-#     assert result == 0
-
-# def test_missing_args_pos1_sum():
-#     with pytest.raises(NoneArgumentException):
-#         calc_sum(None, 0)
-
-# def test_missing_args_pos2_sum():
-#     with pytest.raises(NoneArgumentException):
-#         calc_sum(0, None)
-
-# def test_missing_args_sum():
-#     with pytest.raises(NoneArgumentException):
-#         calc_sum(None, None)
-
-
-def test_decode_sequence():
-    block = b"\xef\x09\x02\x01\x08\x04\x04JOHN"
-    result, _ = decode(block, strict=True)
-    print(result.pretty())
-    assert result.value.age == 8
-    assert result.value.name == "JOHN"
+# import keavem.main
 
 
 def test_decode_header():
@@ -44,7 +12,7 @@ def test_decode_header():
     with open(filename, "rb") as header:
         data = header.read()
     result, _ = decode(data[5:])  # Header starts at pos 5
-    print(result.pretty())
+    # print(result.pretty())
     assert result.value.file_format_version == 1
     assert result.value.sender_name == "BSCGARE/G21Q1.1"
     assert result.value.sender_type == "1"
@@ -52,6 +20,14 @@ def test_decode_header():
     assert result.value.collection_begin_time == datetime(
         2021, 8, 24, 9, 15, tzinfo=timezone.utc
     )
+
+
+def test_decode_header_as_measfileheader():
+    pytest.skip()
+    filename = join(dirname(__file__), "data", "header.asn1")
+    with open(filename, "rb") as header:
+        data = header.read()
+    result, _ = decode(data[5:])  # Header starts at pos 5
     assert result.value == keavem.main.MeasFileHeader(
         1,
         "BSCGARE/G21Q1.1",
@@ -62,9 +38,46 @@ def test_decode_header():
 
 
 def test_decode_file_format_version():
+    pytest.skip()
+    item_pos = 7
     filename = join(dirname(__file__), "data", "file.asn1")
     with open(filename, "rb") as header:
         data = header.read()
-    result, _ = decode(data[0x17B1:])  # Header starts at pos 5
+    result, _ = decode(data[item_pos:])
     print(result.pretty())
-    assert result.value.file_format_version == 1
+    assert result.value == 1
+
+
+def test_decode_sender_name():
+    pytest.skip()
+    item_pos = 10
+    filename = join(dirname(__file__), "data", "file.asn1")
+    with open(filename, "rb") as header:
+        data = header.read()
+    result, _ = decode(data, item_pos)
+    # print(data[item_pos-2:item_pos+5])
+    # print(f"data[:256]: {data[:256]}")
+    print(result.pretty())
+    assert result.value == "BSCGARE/G21Q1.1"
+
+
+def test_decode_sender_type():
+    pytest.skip()
+    item_pos = 0x23
+    filename = join(dirname(__file__), "data", "file.asn1")
+    with open(filename, "rb") as header:
+        data = header.read()
+    result, _ = decode(data[item_pos:])
+    print(result.pretty())
+    assert result.value == "1"
+
+
+def test_decode_obj_inst_id():
+    pytest.skip()
+    item_pos = 0x17B1
+    filename = join(dirname(__file__), "data", "file.asn1")
+    with open(filename, "rb") as header:
+        data = header.read()
+    result, _ = decode(data[item_pos:])
+    print(result.pretty())
+    assert result.value == "SUPERCH2.46-3"

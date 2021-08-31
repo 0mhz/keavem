@@ -3,7 +3,7 @@ from datetime import datetime
 
 from x690.types import Sequence, Boolean, GraphicString, Type, decode
 from x690.util import TypeClass, TypeNature
-from structure import *  # temporarily to facilitate developing
+from structure_legacy import *  # temporarily to facilitate developing
 
 
 class MetaCP0(Type[Union[fileFormatVersion, measStartTime, CatchMetaError]]):
