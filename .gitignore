@@ -1,6 +1,8 @@
 # Custom input
 ### Sensitive data ###
-keavem/tests/data/*
+keavem/tests/data/file.asn1
+keavem/tests/data/header.asn1
+#keavem/tests/data/(*) didn't work?
 
 
 # Created by https://www.toptal.com/developers/gitignore/api/python
