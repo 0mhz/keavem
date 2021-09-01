@@ -37,3 +37,7 @@ def test_decode_measure_start_time_asbytes():
 
 def test_decode_obj_inst_id_asbytes():
     assert get_data_chunk(0x17B1).value == b"SUPERCH2.46-3"
+
+
+def test_decode_suspect_flag_asbytes():
+    assert get_data_chunk(0xE2).value == b"\x00"
