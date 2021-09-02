@@ -1,9 +1,11 @@
 from datetime import datetime
 from typing import List, Union
+
 from x690.types import GraphicString, Sequence, Type, decode
 from x690.util import TypeClass, TypeNature
-from keavem.structure import MeasData, MeasFileHeader, MeasInfo, MeasValue, NEId
+
 from keavem.exceptions import DecodingUndefinedItemCount
+from keavem.structure import MeasData, MeasFileHeader, MeasInfo, MeasValue, NEId
 
 
 class ByteCodec(Type[bytes]):  # Isn't everything a byte codec here?
@@ -159,11 +161,13 @@ class SeqListBytesCodec(Type[Union[List[bytes], MeasInfo, MeasData]]):
     TAG = 1
 
     @staticmethod
-    def decode_raw(data: bytes, slc: slice) -> Union[List[bytes], MeasInfo]:
+    def decode_raw(
+        data: bytes, slc: slice
+    ) -> Union[List[bytes], MeasInfo, MeasData]:
         chunk = data[slc]
         try:
             items, next = decode(chunk, 0, enforce_type=Sequence)
-            print(f"items:{items}\n")
+            # print(f"items:{items}\n")
 
             if len(items) == 2:
                 # failhere
@@ -171,10 +175,12 @@ class SeqListBytesCodec(Type[Union[List[bytes], MeasInfo, MeasData]]):
 
                 print(f"\nexpected_ne_id:\n{items[0]}\n")
                 print(f"\nexptected_meas_info:\n{items[1]}\n")
+
                 # return MeasData(
                 #     ne_id_wrapped.value,
                 #     meas_info_wrapped.value
                 # )
+            # if 18 >= len(items[0].value) > 14:
             if len(items) == 4:
                 (
                     meas_start_time_wrapped,
@@ -182,14 +188,13 @@ class SeqListBytesCodec(Type[Union[List[bytes], MeasInfo, MeasData]]):
                     meas_types_wrapped,
                     meas_values_wrapped,
                 ) = items
-                failhere1
+                # failhere1
                 return MeasInfo(
                     meas_start_time_wrapped.value,
                     granularity_period_wrapped.value,
                     meas_types_wrapped.value,
                     meas_values_wrapped.value,
                 )
-
             raise DecodingUndefinedItemCount(f"{len(items)}")
 
         except:

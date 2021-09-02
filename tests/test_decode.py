@@ -1,9 +1,10 @@
-from os.path import dirname, join
 from datetime import datetime, timezone
+from os.path import dirname, join
 from typing import List, Sequence
-from x690 import decode
 
 import pytest
+from x690 import decode
+
 import keavem.decode
 import keavem.structure
 
@@ -239,3 +240,7 @@ def test_decode_file_footer():
     assert get_data_chunk(0xF9CB2).value == datetime(
         2021, 8, 24, 9, 30, tzinfo=timezone.utc
     )
+
+
+def test_decode_egal():
+    assert decode(b"\x30\x05ab")
