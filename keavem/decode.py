@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Union
 from x690.types import GraphicString, Sequence, Type, decode
 from x690.util import TypeClass, TypeNature
-from keavem.structure import MeasFileHeader, MeasInfo, MeasValue, NEId
+from keavem.structure import MeasData, MeasFileHeader, MeasInfo, MeasValue, NEId
 from keavem.exceptions import DecodingUndefinedItemCount
 
 
@@ -99,14 +99,60 @@ class HeaderCodec(Type[Union[MeasFileHeader, NEId]]):
                 collection_begin_time_wrapped.value,
             )
         if len(items) == 2:
-            (ne_user_name_wrapped, ne_distinguished_name_wrapped) = items
+            # test
+            # (ne_user_name_wrapped, ne_distinguished_name_wrapped) = items
+            ne_user_name_wrapped = items[0]
+            ne_distinguished_name_wrapped = items[1]
             return NEId(
                 ne_user_name_wrapped.value, ne_distinguished_name_wrapped.value
             )
         raise DecodingUndefinedItemCount(f"{len(items)}")
 
 
-class SeqListBytesCodec(Type[Union[List[bytes], MeasInfo]]):
+# class SeqListBytesCodec(Type[Union[List[bytes], MeasInfo]]): #<----- Original
+#     # Semantics: used for MeasResults (List[str]) and MeasInfo (Sequence of 4 items) - and MeasData?!
+#     TYPECLASS = TypeClass.CONTEXT
+#     NATURE = [TypeNature.CONSTRUCTED]
+#     TAG = 1
+
+#     @staticmethod
+#     def decode_raw(data: bytes, slc: slice) -> Union[List[bytes], MeasInfo]:
+#         chunk = data[slc]
+#         try:
+#             items, next = decode(chunk, 0, enforce_type=Sequence)
+#             (
+#                 meas_start_time_wrapped,
+#                 granularity_period_wrapped,
+#                 meas_types_wrapped,
+#                 meas_values_wrapped,
+#             ) = items
+#             return MeasInfo(
+#                 meas_start_time_wrapped.value,
+#                 granularity_period_wrapped.value,
+#                 meas_types_wrapped.value,
+#                 meas_values_wrapped.value,
+#             )
+#         except:
+
+#             # This is used for MeasData too which will result in a list of a list :-(
+#             # It seems that the rest of the data ("MeasInfo") is not being read
+
+#             result, next = decode(chunk, 0)
+#             meas_results_wrapped = [result.pythonize()]
+#             while next < len(chunk):
+#                 item, next = decode(
+#                     chunk,
+#                     next,
+#                 )
+#                 meas_results_wrapped.append(item.pythonize())
+
+#             return meas_results_wrapped
+
+#             # res, _ = decode(chunk)
+#             # return chunk
+
+
+class SeqListBytesCodec(Type[Union[List[bytes], MeasInfo, MeasData]]):
     # Semantics: used for MeasResults (List[str]) and MeasInfo (Sequence of 4 items) - and MeasData?!
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.CONSTRUCTED]
@@ -117,34 +163,54 @@ class SeqListBytesCodec(Type[Union[List[bytes], MeasInfo]]):
         chunk = data[slc]
         try:
             items, next = decode(chunk, 0, enforce_type=Sequence)
-            (
-                meas_start_time_wrapped,
-                granularity_period_wrapped,
-                meas_types_wrapped,
-                meas_values_wrapped,
-            ) = items
-            return MeasInfo(
-                meas_start_time_wrapped.value,
-                granularity_period_wrapped.value,
-                meas_types_wrapped.value,
-                meas_values_wrapped.value,
-            )
-        except:
-            # print("Fail here")
-            # This is used for MeasData too which will result in a list of a list :-(
+            print(f"items:{items}\n")
 
-            # pass
+            if len(items) == 2:
+                # failhere
+                ne_id_wrapped, meas_info_wrapped = items
 
-            result, next = decode(chunk, 0)
-            meas_results_wrapped = [result.pythonize()]
-            while next < len(chunk):
-                item, next = decode(
-                    chunk,
-                    next,
+                print(f"\nexpected_ne_id:\n{items[0]}\n")
+                print(f"\nexptected_meas_info:\n{items[1]}\n")
+                # return MeasData(
+                #     ne_id_wrapped.value,
+                #     meas_info_wrapped.value
+                # )
+            if len(items) == 4:
+                (
+                    meas_start_time_wrapped,
+                    granularity_period_wrapped,
+                    meas_types_wrapped,
+                    meas_values_wrapped,
+                ) = items
+                failhere1
+                return MeasInfo(
+                    meas_start_time_wrapped.value,
+                    granularity_period_wrapped.value,
+                    meas_types_wrapped.value,
+                    meas_values_wrapped.value,
                 )
-                meas_results_wrapped.append(item.pythonize())
 
-            return meas_results_wrapped
+            raise DecodingUndefinedItemCount(f"{len(items)}")
+
+        except:
+            dirtydebugswitch = 1
+            if dirtydebugswitch == 0:
+                item, next = decode(chunk, 0)
+                result = [item.pythonize()]
+                while next < len(chunk):
+                    item, next = decode(
+                        chunk,
+                        next,
+                    )
+                    result.append(item.pythonize())
+                return result
+            else:
+                items = []
+                next_tlv = 0
+                while next_tlv < len(chunk):
+                    item, next_tlv = decode(chunk, next_tlv)
+                    items.append(item)
+                return items
 
 
 class ListStrCodec(Type[List[str]]):
