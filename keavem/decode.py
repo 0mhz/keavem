@@ -166,39 +166,67 @@ class SeqListBytesCodec(Type[Union[List[bytes], MeasInfo, MeasData]]):
     ) -> Union[List[bytes], MeasInfo, MeasData]:
         chunk = data[slc]
         try:
-            items, next = decode(chunk, 0, enforce_type=Sequence)
-            # print(f"items:{items}\n")
+            # items, next = decode(chunk, 0, enforce_type=Sequence)
+            items, next = decode(data, slc.start, enforce_type=Sequence)
+            # print(f"ITEMS IN SEQENCE:{items}\n")
+
+            # if 18 >= len(items[0].value) > 14:
+            if len(items) == 4 and isinstance(items[0], ByteCodec):
+                # pass
+
+                items = []
+                next_tlv = 0
+                while next_tlv < len(chunk):
+                    item, next_tlv = decode(chunk, next_tlv)
+                    (
+                        meas_start_time_wrapped,
+                        granularity_period_wrapped,
+                        meas_types_wrapped,
+                        meas_values_wrapped,
+                    ) = item
+                    items.append(
+                        MeasInfo(
+                            meas_start_time_wrapped.value,
+                            granularity_period_wrapped.value,
+                            meas_types_wrapped.value,
+                            meas_values_wrapped.value,
+                        )
+                    )
+                return items
+
+                # (
+                #     meas_start_time_wrapped,
+                #     granularity_period_wrapped,
+                #     meas_types_wrapped,
+                #     meas_values_wrapped,
+                # ) = items
+                # for list_item in meas_values_wrapped.value:
+                #     #print(list_item)
+                #     return MeasInfo(
+                #         meas_start_time_wrapped.value,
+                #         granularity_period_wrapped.value,
+                #         meas_types_wrapped.value,
+                #         list_item.value,
+                #     )
 
             if len(items) == 2:
                 # failhere
+                # print(len(items))
+
+                # print(f"\nexpected_ne_id:\n{items[0]}\n")
+                # print(f"\nexpected_meas_info:\n{items[1]}\n")
                 ne_id_wrapped, meas_info_wrapped = items
 
-                print(f"\nexpected_ne_id:\n{items[0]}\n")
-                print(f"\nexptected_meas_info:\n{items[1]}\n")
-
-                # return MeasData(
-                #     ne_id_wrapped.value,
-                #     meas_info_wrapped.value
-                # )
-            # if 18 >= len(items[0].value) > 14:
-            if len(items) == 4:
-                (
-                    meas_start_time_wrapped,
-                    granularity_period_wrapped,
-                    meas_types_wrapped,
-                    meas_values_wrapped,
-                ) = items
-                # failhere1
-                return MeasInfo(
-                    meas_start_time_wrapped.value,
-                    granularity_period_wrapped.value,
-                    meas_types_wrapped.value,
-                    meas_values_wrapped.value,
-                )
-            raise DecodingUndefinedItemCount(f"{len(items)}")
+                return MeasData(ne_id_wrapped.value, meas_info_wrapped.value)
+            # else:
+            #     return items
+            raise DecodingUndefinedItemCount(
+                f"Caught undefined amout of items:{len(items)} with unkown type at items[0]: {type(items[0])}"
+            )
 
         except:
-            dirtydebugswitch = 1
+
+            dirtydebugswitch = 0
             if dirtydebugswitch == 0:
                 item, next = decode(chunk, 0)
                 result = [item.pythonize()]
@@ -208,6 +236,12 @@ class SeqListBytesCodec(Type[Union[List[bytes], MeasInfo, MeasData]]):
                         next,
                     )
                     result.append(item.pythonize())
+                # print("resultSTARTresultSTARTresultSTARTresultSTARTresultSTARTresultSTARTresultSTARTresultSTARTresultSTART")
+                # print("resultSTARTresultSTARTresultSTARTresultSTARTresultSTARTresultSTARTresultSTARTresultSTARTresultSTART")
+                # print(result)
+                # print("STOPresultSTOPresultSTOPresultSTOPresultSTOPresultSTOPresultSTOPresultSTOPresultSTOPresultSTOPresult")
+                # print("STOPresultSTOPresultSTOPresultSTOPresultSTOPresultSTOPresultSTOPresultSTOPresultSTOPresultSTOPresult")
+
                 return result
             else:
                 items = []
@@ -235,21 +269,40 @@ class ListStrCodec(Type[List[str]]):
         return types_wrapped
 
 
-class ListBytesCodec(Type[MeasValue]):
+class ListBytesCodec(Type[List[MeasValue]]):
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.CONSTRUCTED]
     TAG = 3
 
     @staticmethod
-    def decode_raw(data: bytes, slc: slice) -> MeasValue:
-        sequence, _ = decode(data, slc.start)
-        (
-            obj_inst_id_wrapped,
-            meas_results_wrapped,
-            suspect_flag_wrapped,
-        ) = sequence
-        return MeasValue(
-            obj_inst_id_wrapped.value,
-            meas_results_wrapped.value,
-            suspect_flag_wrapped.value,
-        )
+    def decode_raw(data: bytes, slc: slice) -> List[MeasValue]:
+        chunk = data[slc]
+        items = []
+        next_tlv = 0
+        while next_tlv < len(chunk):
+            item, next_tlv = decode(chunk, next_tlv)
+            (
+                obj_inst_id_wrapped,
+                meas_results_wrapped,
+                suspect_flag_wrapped,
+            ) = item
+            items.append(
+                MeasValue(
+                    obj_inst_id_wrapped.value,
+                    meas_results_wrapped.value,
+                    suspect_flag_wrapped.value,
+                )
+            )
+        return items
+
+    #     sequence, _ = decode(data, slc.start)
+    #     (
+    #         obj_inst_id_wrapped,
+    #         meas_results_wrapped,
+    #         suspect_flag_wrapped,
+    #     ) = sequence
+    #     return MeasValue(
+    #         obj_inst_id_wrapped.value,
+    #         meas_results_wrapped.value,
+    #         suspect_flag_wrapped.value,
+    #     )
