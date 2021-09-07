@@ -6,8 +6,10 @@ from typing import List, Union
 @dataclass
 class MeasValue:
     meas_obj_inst_id: str
-    meas_results: List[Union[int, float, None]]
-    suspect_flag: bool
+    meas_results: Union[List[int], List[Union[int, float, None]]]
+    #    meas_results: List[Union[int, float, None]]
+
+    suspect_flag: int  # as bool
 
 
 @dataclass
@@ -41,7 +43,7 @@ class MeasFileHeader:
     sender_name: str
     sender_type: str
     vendor_name: str
-    collection_begin_time: datetime
+    collection_begin_time: Union[datetime, float]  # parse
 
 
 @dataclass

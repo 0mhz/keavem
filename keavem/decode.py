@@ -18,19 +18,24 @@ class ByteCodec(Type[bytes]):
         return data[slc]
 
 
-class StrByteCodec(Type[bytes]):
+class StrByteCodec(Type[Union[bytes, int]]):
     TYPECLASS = TypeClass.CONTEXT
     NATURE = [TypeNature.PRIMITIVE]
     TAG = 1
 
     @staticmethod
-    def decode_raw(data: bytes, slc: slice) -> bytes:
+    def decode_raw(data: bytes, slc: slice) -> Union[bytes, int]:
         item = data[slc]
         if len(item) == 2:
-            # Method 1 makehex(int(item.hex()))
-            # Method 2: Split bytes, shift low byte, add to second byte
-            # split_bytes = [granularity_period[i:i + 1] for i in range(0, len(granularity_period), 1)]
-            return b"900"  # Hardcoded for now
+            granularity_period = item
+            # Split bytes, shift first byte, merge with second byte
+            split_bytes = [
+                granularity_period[i : i + 1]
+                for i in range(0, len(granularity_period), 1)
+            ]
+            return int.from_bytes(split_bytes[0], "big") << 8 | int.from_bytes(
+                split_bytes[1], "big"
+            )
         return item
 
 
@@ -45,7 +50,7 @@ class StrCP2Codec(Type[Union[str, bytes, datetime]]):
         if isinstance(chunk, bytes) and len(chunk) == 0:
             return "1"
         if 18 >= len(chunk) > 14:
-            return datetime.strptime(chunk.decode("ascii"), "%Y%m%d%H%M%S%z")
+            return datetime.strptime(chunk.decode("ascii"), "%Y%m%d%H%M%S%f%z")
         return chunk
 
 
@@ -69,7 +74,7 @@ class StrMetaCP4Codec(Type[Union[str, datetime]]):
     def decode_raw(data: bytes, slc: slice) -> Union[str, datetime]:
         chunk = data[slc].decode("ascii")
         if 18 >= len(chunk) > 14:
-            return datetime.strptime(chunk, "%Y%m%d%H%M%S%z")
+            return datetime.strptime(chunk, "%Y%m%d%H%M%S%f%z")
         return chunk
 
 
@@ -131,6 +136,8 @@ class SeqListBytesCodec(Type[Union[List[bytes], MeasInfo, MeasData]]):
                         meas_types_wrapped,
                         meas_values_wrapped,
                     ) = item
+                    # meas_start_time_wrapped_decoded = datetime.strptime(meas_start_time_wrapped.value, "%Y%m%d%H%M%S%z")
+                    # print(meas_start_time_wrapped_decoded)
                     items.append(
                         MeasInfo(
                             meas_start_time_wrapped.value,
@@ -191,11 +198,15 @@ class ListSeqCodec(Type[List[MeasValue]]):
                 meas_results_wrapped,
                 suspect_flag_wrapped,
             ) = item
+            meas_results_decoded = [
+                int.from_bytes(result, "big")
+                for result in meas_results_wrapped.value
+            ]
             items.append(
                 MeasValue(
-                    obj_inst_id_wrapped.value,
-                    meas_results_wrapped.value,
-                    suspect_flag_wrapped.value,
+                    obj_inst_id_wrapped.value.decode("ascii"),
+                    meas_results_decoded,
+                    int.from_bytes(suspect_flag_wrapped.value, "big"),
                 )
             )
         return items
