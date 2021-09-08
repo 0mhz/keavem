@@ -31,9 +31,10 @@ def test_parse_footer():
     assert footer == 1629797400.0
 
 
-def test_parse_data():
+def test_parse():
     filename = join(dirname(__file__), "data", "file.asn1")
     with open(filename, "rb") as data:
         data = data.read()
     result, _ = decode(data)
-    data = keavem.parse.parse_data(result[1].value)
+    # parsed = keavem.parse.parse(result)
+    # assert result == ''
