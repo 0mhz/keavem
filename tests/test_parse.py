@@ -14,11 +14,26 @@ def test_parse_header():
     with open(filename, "rb") as data:
         data = data.read()
     result, _ = decode(data)
-    meas_file_header, _, _ = result
-    header = keavem.parse.parse_header(meas_file_header.value)
+    header = keavem.parse.parse_header(result[0].value)
 
     assert header.file_format_version == 1
     assert header.sender_name == "BSCGARE/G21Q1.1"
     assert header.sender_type == "1"
     assert header.vendor_name == "Ericsson"
     assert header.collection_begin_time == 1629796500.0
+
+
+def test_parse_footer():
+    filename = join(dirname(__file__), "data", "footer.asn1")
+    with open(filename, "rb") as data:
+        data = data.read()
+    footer = keavem.parse.parse_footer(decode(data)[0].value)
+    assert footer == 1629797400.0
+
+
+def test_parse_data():
+    filename = join(dirname(__file__), "data", "file.asn1")
+    with open(filename, "rb") as data:
+        data = data.read()
+    result, _ = decode(data)
+    data = keavem.parse.parse_data(result[1].value)
