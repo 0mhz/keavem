@@ -10,7 +10,6 @@ argparser = argparse.ArgumentParser()
 argparser.add_argument(
     "-i",
     "--input",
-    #                    type=argparse.FileType('r'),
     required=True,
     action="store",
     dest="input_file",
