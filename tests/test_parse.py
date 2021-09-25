@@ -20,7 +20,7 @@ def test_parse_header():
     assert header.sender_name == "BSCGARE/G21Q1.1"
     assert header.sender_type == "1"
     assert header.vendor_name == "Ericsson"
-    assert header.collection_begin_time == 1629796500.0
+    assert header.collection_begin_time == 1629796500000000000
 
 
 def test_parse_footer():
