@@ -1,9 +1,6 @@
-# Custom input
-### Sensitive data ###
-keavem/tests/data/file.asn1
-keavem/tests/data/header.asn1
-#keavem/tests/data/(*) didn't work?
-
+### CONFIDENTIAL DATA ###
+keavem-line-protocol/tests/data/*
+*.asn1
 
 # Created by https://www.toptal.com/developers/gitignore/api/python
 # Edit at https://www.toptal.com/developers/gitignore?templates=python
